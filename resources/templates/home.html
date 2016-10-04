@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hurricane Tracker</title>
+</head>
+<body>
+{{^name}}
+<form action="/login" method="post">
+    <input type="text" placeholder="Enter UserName" name="loginName"/>
+    <br>
+    <input type="password" placeholder="Enter Password" name="password"/>
+    <br>
+    <button type="submit">Login</button>
+</form>
+{{/name}}
+{{#name}}
+Hello, {{name}}!
+<br>
+<form action="/logout" method="post">
+    <button type="sumbit">Logout</button>
+</form>
+{{/name}}
+</body>
+</html>
