@@ -43,11 +43,13 @@ Hello, {{name}}!
 <br>
 <table>
     <tr>
-        <td>Name</td>
-        <td>Location</td>
-        <td>Category</td>
-        <td>Submitter</td>
-        <td>Image</td>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Category</th>
+        <th>Submitter</th>
+        <th>Image</th>
+        <th></th>
+        <th></th>
     </tr>
 {{#hurricanes}}
 <td>
@@ -55,7 +57,16 @@ Hello, {{name}}!
     <td>{{category}}</td>
     <td>{{location}}</td>
     <td>{{user.name</td>
-    <td><img src={{image}}></td>
+    <td><img src="{{image}}" width="100" height="100"/></td>
+    <td>
+        <form action="/delete" method="post">
+            <input type="hidden" value="{{id}}" name="id"/>
+            <button type="submit">Delete</button>
+        </form>
+    </td>
+    <td>
+        <a href="/edit-hurricane?id={{id}}">Edit</a>
+    </td>
 </li>
 {{/hurricanes}}
 </table>

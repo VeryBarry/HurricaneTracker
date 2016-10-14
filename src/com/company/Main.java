@@ -35,7 +35,6 @@ public class Main {
                 },
                 new MustacheTemplateEngine()
         );
-
         Spark.post(
                 "/login",
                 (request, response) -> {
@@ -77,6 +76,30 @@ public class Main {
                     return null;
                 }
         );
+        Spark.post(
+                "/delete",
+                (request, response) -> {
+                    int id = Integer.valueOf((request.queryParams("id")));
+                    deleteHurricane(conn, id);
+                    response.redirect("/");
+                    return null;
+                }
+        );
+        Spark.get(
+                "/edit-hurricane",
+                (request, response) -> {
+                    int id = Integer.valueOf(request.queryParams("id"));
+                   // Hurricane hurricane = get id for object from db
+                    return new ModelAndView(null, "edit.html");
+                },
+                new MustacheTemplateEngine()
+        );
+        Spark.post(
+                "/edit-hurricane",
+                (request, response) -> {
+                    return null;
+                }
+        );
     }
     public static void createTable(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
@@ -111,17 +134,26 @@ public class Main {
         }
         return hurricanesArray;
     }
+    public static void editHurricane(Connection conn, String hName, String hLocation, int hCategory, String hImage) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("UPDATE hurricanes SET name = ?, location = ?, category = ?, image = ?");
+        stmt.setString(1, hName);
+        stmt.setString(2, hLocation);
+        stmt.setInt(3, hCategory);
+        stmt.setString(4, hImage);
+        stmt.execute();
+    }
     public static void insertUser(Connection conn, String name, String password) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement("INSERT INTO users VALUES(NULL, ?, ?)");
         stmt.setString(1, name);
         stmt.setString(2, password);
         stmt.execute();
-
+    }
+    public static void deleteHurricane(Connection conn, int id) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("DELETE FROM hurricanes WHERE userId = ?");
+        stmt.setInt(1, id);
+        stmt.execute();
     }
 }
-
-
-
 //        Write a static method selectHurricane that returns an ArrayList<Hurricane> containing all the hurricanes in the database.
 //        Remove the global ArrayList<Hurricane> and instead just call selectHurricanes inside the "/" route.
 //        Optional:

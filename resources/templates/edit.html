@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Hurricane</title>
+</head>
+<body>
+<form action="/hurricane" method="post">
+    <input type="text" placeholder="Hurricane Name" name="hName"/>
+    <br>
+    <input type="text" placeholder="Hurricane Location" name="hLocation"/>
+    <br>
+    <select name="hCategory">
+        <option selected disabled>Category</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+    </select>
+    <br>
+    <input type="text" placeholder="Image URL" name="hImage" width="200"/>
+    <br>
+    <button type="submit">Submit hurricane</button>
+</form>
+</body>
+</html>
