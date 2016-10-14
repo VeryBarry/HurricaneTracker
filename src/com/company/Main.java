@@ -23,15 +23,10 @@ public class Main {
                 (request, response) -> {
                     Session session = request.session();
                     String name = session.attribute("loginName");
-                    User user = users.get(name);
-                    HashMap m = new HashMap();
-                    if (user != null) {
-                        m.put("name", user.name);
-                    }
 
-                    selectHurricane(conn);
+                    ArrayList<Hurricane> hurricanesArray = selectHurricane(conn);
 
-                    return new ModelAndView(m, "home.html");
+                    return new ModelAndView(hurricanesArray, "home.html");
                 },
                 new MustacheTemplateEngine()
         );
