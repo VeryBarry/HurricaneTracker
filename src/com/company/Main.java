@@ -18,7 +18,6 @@ public class Main {
         Connection conn = DriverManager.getConnection("jdbc:h2:./main");
         createTable(conn);
 
-
         Spark.get(
                 "/",
                 (request, response) -> {
@@ -30,10 +29,9 @@ public class Main {
                         m.put("name", user.name);
                     }
 
+                    selectHurricane(conn);
 
-
-
-                    return new ModelAndView(m, "home.html");
+                    return new ModelAndView(hurricanesArray, "home.html");
                 },
                 new MustacheTemplateEngine()
         );
@@ -45,14 +43,14 @@ public class Main {
                     String password = request.queryParams("password");
 
                     User user = users.get(name);
-                    if (user == null) {
-                        user = new User(name, password);
-                        users.put(name, user);
-                    }
-                    else if (!password.equals(user.password)) {
-                        response.redirect("/");
-                        return null;
-                    }
+//                    if (user == null) {
+//                        user = new User(null, name, password);
+//                        users.put(name, user);
+//                    }
+//                    else if (!password.equals(user.password)) {
+//                        response.redirect("/");
+//                        return null;
+//                    }
                     Session session = request.session();
                     session.attribute("loginName", name);
                     response.redirect("/");
@@ -81,7 +79,7 @@ public class Main {
                     String hLocation = request.queryParams("hLocation");
                     int hCategory = Integer.parseInt(request.queryParams("hCategory"));
                     String hImage = request.queryParams("hImage");
-                    insertHurricane(conn, name, hName, hLocation, hCategory, hImage);
+                    insertHurricane(conn, hName, hLocation, hCategory, hImage, user.id);
                     response.redirect("/");
                     return null;
                 }
@@ -89,19 +87,47 @@ public class Main {
     }
     public static void createTable(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
-        stmt.execute("CREATE TABLE IF NOT EXISTS hurricanes (name VARCHAR, location VARCHAR, category INT, image VARCHAR, user VARCHAR)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS hurricanes (id IDENTITY, name VARCHAR, location VARCHAR, category INT, image VARCHAR, user_Id INT)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS users (id IDENTITY, name VARCHAR, password VARCHAR)");
     }
-    public static void insertHurricane(Connection conn, String name, String hName, String hLocation, int hCategory, String hImage) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("INSERT INTO hurricanes VALUES(?, ?, ?, ?, ?)");
+    public static void insertHurricane(Connection conn, String hName, String hLocation, int hCategory, String hImage, int userId) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO hurricanes VALUES(NULL, ?, ?, ?, ?, ?)");
         stmt.setString(1, hName);
         stmt.setString(2, hLocation);
         stmt.setInt(3, hCategory);
         stmt.setString(4, hImage);
-        stmt.setString(5, name);
+        stmt.setInt(5, userId);
         stmt.execute();
     }
-    public static void selectHurricane(Connection conn) {
+    public static ArrayList<Hurricane> selectHurricane(Connection conn) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM hurricanes");
+        ResultSet results = stmt.executeQuery();
+        ArrayList<Hurricane> hurricanesArray = new ArrayList<>();
+        while (results.next()) {
+            int id = results.getInt("id");
+            String hName = results.getString("hName");
+            String hLocation = results.getString("hLocation");
+            int hCategory = results.getInt("hCategory");
+            String hImage = results.getString("hImage");
+            int user_Id = results.getInt("user_Id");
 
+            //still need to convert int to user name
+
+            Hurricane h = new Hurricane(id, hName, hLocation, hCategory, hImage, user_Id);
+            hurricanesArray.add(h);
+        }
+        return hurricanesArray;
+    }
+    public static User selectUser(Connection conn, String name) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE name = ?");
+        stmt.setString(1, name);
+        ResultSet results = stmt.executeQuery();
+        if (results.next()) {
+            int id = results.getInt("id");
+            String password = results.getString("password");
+            return new User(id, name, password);
+        }
+        return null;
     }
 }
 
