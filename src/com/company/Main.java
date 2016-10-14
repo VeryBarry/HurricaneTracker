@@ -31,7 +31,7 @@ public class Main {
 
                     selectHurricane(conn);
 
-                    return new ModelAndView(hurricanesArray, "home.html");
+                    return new ModelAndView(m, "home.html");
                 },
                 new MustacheTemplateEngine()
         );
@@ -42,15 +42,8 @@ public class Main {
                     String name = request.queryParams("loginName");
                     String password = request.queryParams("password");
 
-                    User user = users.get(name);
-//                    if (user == null) {
-//                        user = new User(null, name, password);
-//                        users.put(name, user);
-//                    }
-//                    else if (!password.equals(user.password)) {
-//                        response.redirect("/");
-//                        return null;
-//                    }
+                    insertUser(conn, name, password);
+
                     Session session = request.session();
                     session.attribute("loginName", name);
                     response.redirect("/");
@@ -118,16 +111,12 @@ public class Main {
         }
         return hurricanesArray;
     }
-    public static User selectUser(Connection conn, String name) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE name = ?");
+    public static void insertUser(Connection conn, String name, String password) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO users VALUES(NULL, ?, ?)");
         stmt.setString(1, name);
-        ResultSet results = stmt.executeQuery();
-        if (results.next()) {
-            int id = results.getInt("id");
-            String password = results.getString("password");
-            return new User(id, name, password);
-        }
-        return null;
+        stmt.setString(2, password);
+        stmt.execute();
+
     }
 }
 
