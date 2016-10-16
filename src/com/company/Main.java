@@ -16,7 +16,7 @@ public class Main {
     public static void main(String[] args) throws SQLException {
         Server.createWebServer().start();
         Connection conn = DriverManager.getConnection("jdbc:h2:./main");
-        createTable(conn);
+        createTables(conn);
 
         Spark.get(
                 "/",
@@ -25,8 +25,11 @@ public class Main {
                     String name = session.attribute("loginName");
 
                     ArrayList<Hurricane> hurricanesArray = selectHurricane(conn);
+                    HashMap m = new HashMap();
 
-                    return new ModelAndView(hurricanesArray, "home.html");
+                    m.put("Hurricanes", selectHurricane(conn));
+
+                    return new ModelAndView(m, "home.html");
                 },
                 new MustacheTemplateEngine()
         );
@@ -92,11 +95,24 @@ public class Main {
         Spark.post(
                 "/edit-hurricane",
                 (request, response) -> {
+                    Session session = request.session();
+                    String name = session.attribute("userName");
+                    if (name == null) {
+                        return null;
+                    }
+                    int id = Integer.parseInt(request.queryParams("hurrId"));
+                    String hName = request.queryParams("hName");
+                    String hLocation = request.queryParams("hLocation");
+                    int hCat = Integer.parseInt(request.queryParams("hCategory"));
+                    String hImage = request.queryParams("hImage");
+                    editHurricane(conn, id, hName, hLocation, hCat, hImage);
+                    response.redirect("/");
                     return null;
+
                 }
         );
     }
-    public static void createTable(Connection conn) throws SQLException {
+    public static void createTables(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
         stmt.execute("CREATE TABLE IF NOT EXISTS hurricanes (id IDENTITY, name VARCHAR, location VARCHAR, category INT, image VARCHAR, user_Id INT)");
         stmt.execute("CREATE TABLE IF NOT EXISTS users (id IDENTITY, name VARCHAR, password VARCHAR)");
@@ -129,8 +145,9 @@ public class Main {
         }
         return hurricanesArray;
     }
-    public static void editHurricane(Connection conn, String hName, String hLocation, int hCategory, String hImage) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("UPDATE hurricanes SET name = ?, location = ?, category = ?, image = ?");
+    public static void editHurricane(Connection conn, int id, String hName, String hLocation, int hCategory, String hImage) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("UPDATE hurricanes SET name = ?, location = ?, category = ?, image = ? WHERE id = ?");
+        stmt.setInt(5, id);
         stmt.setString(1, hName);
         stmt.setString(2, hLocation);
         stmt.setInt(3, hCategory);
@@ -143,15 +160,22 @@ public class Main {
         stmt.setString(2, password);
         stmt.execute();
     }
+    public static ArrayList<User> selectUser(Connection conn) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users");
+        ResultSet results = stmt.executeQuery();
+        ArrayList<User> usersArray = new ArrayList<>();
+        while (results.next()) {
+            int id = results.getInt("id");
+            String name = results.getString("name");
+            String password = results.getString("password");
+            User u = new User(id, name, password);
+            usersArray.add(u);
+        }
+        return usersArray;
+    }
     public static void deleteHurricane(Connection conn, int id) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement("DELETE FROM hurricanes WHERE userId = ?");
         stmt.setInt(1, id);
         stmt.execute();
     }
 }
-//        Write a static method selectHurricane that returns an ArrayList<Hurricane> containing all the hurricanes in the database.
-//        Remove the global ArrayList<Hurricane> and instead just call selectHurricanes inside the "/" route.
-//        Optional:
-//        Write a static method deleteHurricane and run it in the /delete-hurricane route. It should remove the correct row using id.
-//        Add a form to edit the hurricane name and other attributes, and create an /edit-hurricane route. Write a static method updateHurricane and use it in that route. Then redirect to "/".
-//        Add a search form which filters the hurricane list to only those hurricanes whose name contains the (case-insensitive) search string
