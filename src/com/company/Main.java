@@ -132,10 +132,10 @@ public class Main {
         ArrayList<Hurricane> hurricanesArray = new ArrayList<>();
         while (results.next()) {
             int id = results.getInt("id");
-            String hName = results.getString("hName");
-            String hLocation = results.getString("hLocation");
-            int hCategory = results.getInt("hCategory");
-            String hImage = results.getString("hImage");
+            String hName = results.getString("name");
+            String hLocation = results.getString("location");
+            int hCategory = results.getInt("category");
+            String hImage = results.getString("image");
             int user_Id = results.getInt("user_Id");
 
             //still need to convert int to user name
@@ -174,7 +174,7 @@ public class Main {
         return usersArray;
     }
     public static void deleteHurricane(Connection conn, int id) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("DELETE FROM hurricanes WHERE userId = ?");
+        PreparedStatement stmt = conn.prepareStatement("DELETE FROM hurricanes WHERE user_Id = ?");
         stmt.setInt(1, id);
         stmt.execute();
     }

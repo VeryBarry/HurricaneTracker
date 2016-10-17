@@ -24,10 +24,10 @@ public class MainTests {
         Connection conn = startConnection();
         Main.insertUser(conn,"Barry","1234");
         ArrayList<User> userArray = Main.selectUser(conn);
-        conn.close();
         assertTrue(userArray != null);
         ArrayList<User> userTest = Main.selectUser(conn);
         assertTrue(!userTest.isEmpty());
+        conn.close();
     }
     @Test
     public void testInsertSelectHurricane() throws SQLException {
